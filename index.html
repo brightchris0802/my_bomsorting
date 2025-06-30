@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>my_bomsorting</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="left">
+      <h3>📋 붙여넣기</h3>
+      <textarea id="inputArea" placeholder="파일명<TAB>경로 형식으로 붙여넣기"></textarea>
+    </div>
+    <div class="right">
+      <button onclick="analyze()">분석하기</button>
+      <table id="resultTable">
+        <thead>
+          <tr>
+            <th>도면번호</th><th>도면명칭</th><th>확장자</th><th>경로</th><th>분류</th><th>예외</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
