@@ -63,3 +63,7 @@ function analyze() {
     tbody.appendChild(tr);
   });
 }
+function resetAll() {
+  document.getElementById('inputArea').value = '';
+  document.querySelector('#resultTable tbody').innerHTML = '';
+}

@@ -56,3 +56,8 @@ tr.warn {
 tr.unknown {
   background-color: #eaeaea;
 }
+.button-row {
+  display: flex;
+  gap: 20px; /* 버튼 하나만큼의 여유 공간 */
+  margin-bottom: 10px;
+}
