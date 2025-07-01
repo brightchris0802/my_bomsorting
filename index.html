@@ -12,7 +12,14 @@
       <textarea id="inputArea" placeholder="파일명<TAB>경로 형식으로 붙여넣기"></textarea>
     </div>
     <div class="right">
-      <button onclick="analyze()">분석하기</button>
+      <div class="button-group">
+        <button onclick="analyze()">분석하기</button>
+        <button onclick="resetAll()">초기화</button>
+      </div>
+      <table id="resultTable">
+        ...
+      </table>
+    </div>
       <table id="resultTable">
         <thead>
           <tr>
@@ -24,5 +31,6 @@
     </div>
   </div>
   <script src="script.js"></script>
+
 </body>
 </html>

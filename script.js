@@ -74,3 +74,7 @@ function analyze() {
       tbody.appendChild(row);
     });
   }
+  function resetAll() {
+    document.getElementById('inputArea').value = '';
+    document.getElementById('resultTable').querySelector('tbody').innerHTML = '';
+  }
