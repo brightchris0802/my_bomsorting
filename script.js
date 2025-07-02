@@ -1,69 +1,79 @@
-function analyze() {
-  const input = document.getElementById('inputArea').value.trim();
-  const rows = input.split('\n');
-  const tbody = document.querySelector('#resultTable tbody');
-  tbody.innerHTML = '';
-
-  rows.forEach(line => {
-    const [filename, path] = line.split('\t');
-    if (!filename || !path) return;
-
-    const extension = filename.includes('.') ? filename.split('.').pop() : '';
-    const parts = filename.split('_');
-    const result = {
-      number: '',
-      name: '',
-      extension,
-      path,
-      type: '',
-      error: ''
-    };
-
-    // 도면번호와 명칭 파싱
-    if (parts.length >= 2 && parts[0].includes('-')) {
-      result.number = parts[0];
-      result.name = parts.slice(1).join('_').replace(`.${extension}`, '');
-    } else if (parts.length >= 3) {
-      result.type = '기성품';
-      result.name = parts[1];
-    } else {
-      result.error = '파일명 형식 오류';
-    }
-
-    // 분류
-    if (result.type !== '기성품') {
-      if ((path.includes('2_Part') || path.includes('02_Part')) && extension === 'ipt') {
-        result.type = '부품';
-      } else if (path.includes('3D') && extension === 'iam') {
-        result.type = '조립품';
-      } else if ((path.includes('3_공용부품') || path.includes('03_공용부품'))) {
-        result.type = '기성품';
-      } else if ((path.includes('2_Part') || path.includes('02_Part')) && extension === 'iam') {
-        result.type = '판별불가';
-        result.error = '판넬 또는 프로파일 판단 필요';
-      } else {
-        result.type = '미분류';
-      }
-    }
-
-    const tr = document.createElement('tr');
-    tr.className = result.error
-      ? (result.error.includes('판넬') ? 'unknown' : 'warn')
-      : '';
-
-    tr.innerHTML = `
-      <td>${result.number}</td>
-      <td>${result.name}</td>
-      <td>${result.extension}</td>
-      <td>${result.path}</td>
-      <td>${result.type}</td>
-      <td>${result.error}</td>
-    `;
-
-    tbody.appendChild(tr);
-  });
-}
 function resetAll() {
   document.getElementById('inputArea').value = '';
   document.querySelector('#resultTable tbody').innerHTML = '';
+}
+
+function analyze() {
+  const input = document.getElementById('inputArea').value.trim();
+  const lines = input.split('\n');
+  const entries = lines.map(line => {
+    const [filename, path] = line.split(/\t|\s{2,}/);
+    return { filename, path };
+  });
+
+  const iamIptPairs = {};
+  entries.forEach(entry => {
+    const name = entry.filename.replace(/\.(iam|ipt)$/i, '');
+    const ext = entry.filename.split('.').pop().toLowerCase();
+    const isIn2Part = /(?:^|\\)(?:2_Part|02_Part)(?:\\|$)/i.test(entry.path);
+    if (isIn2Part) {
+      if (!iamIptPairs[name]) iamIptPairs[name] = {};
+      iamIptPairs[name][ext] = true;
+    }
+  });
+
+  const tbody = document.querySelector('#resultTable tbody');
+  tbody.innerHTML = '';
+
+  entries.forEach(entry => {
+    const ext = entry.filename.split('.').pop().toLowerCase();
+    const name = entry.filename.replace(/\.(iam|ipt)$/i, '');
+    const path = entry.path;
+    let type = '';
+    let code = '';
+    let namePart = '';
+    let vendor = '';
+    let exception = '';
+
+    const is2Part = /(?:^|\\)(?:2_Part|02_Part)(?:\\|$)/i.test(path);
+    const is3D = /(?:^|\\)3D(?:\\|$)/i.test(path);
+    const isStandard = /(?:^|\\)(?:3_공용부품|03_공용부품)(?:\\|$)/i.test(path);
+
+    if (isStandard && entry.filename.includes('_')) {
+      const parts = entry.filename.replace(/\.(iam|ipt)$/i, '').split('_');
+      if (parts.length >= 3) {
+        type = '기성품';
+        code = parts[0];
+        namePart = parts[1];
+        vendor = parts.slice(2).join('_');
+      } else {
+        type = '기성품';
+        exception = '형식 오류';
+      }
+    } else if (is2Part) {
+      if (iamIptPairs[name]?.iam && iamIptPairs[name]?.ipt) {
+        type = ext === 'iam' ? '판넬' : '판넬서브';
+      } else {
+        type = '부품'; // 새 규칙에 따라 .iam도 부품 처리
+      }
+    } else if (is3D && ext === 'iam') {
+      type = '조립품';
+    } else {
+      exception = '분류불가';
+    }
+
+    if (!type) type = '미분류';
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${code || name}</td>
+      <td>${namePart || (name.includes('_') ? name.split('_').slice(1).join('_') : '')}</td>
+      <td>${ext}</td>
+      <td>${path}</td>
+      <td>${type}</td>
+      <td>${vendor}</td>
+      <td>${exception}</td>
+    `;
+    tbody.appendChild(tr);
+  });
 }
