@@ -39,30 +39,35 @@ function analyze() {
     const is3D = /(?:^|\\)3D(?:\\|$)/i.test(path);
     const isStandard = /(?:^|\\)(?:3_공용부품|03_공용부품)(?:\\|$)/i.test(path);
 
-    if (isStandard && entry.filename.includes('_')) {
+    if (!entry.filename || !entry.path) {
+      exception = '파일명 또는 경로가 누락되어 분석할 수 없습니다.';
+    } else if (ext === 'ipt' && is3D) {
+      exception = 'ipt 파일은 조립품으로 분류할 수 없습니다.';
+    } else if (isStandard && entry.filename.includes('_')) {
       const parts = entry.filename.replace(/\.(iam|ipt)$/i, '').split('_');
-      if (parts.length >= 3) {
+      if (parts.length >= 2) {
         type = '기성품';
         code = parts[0];
         namePart = parts[1];
-        vendor = parts.slice(2).join('_');
+        vendor = parts.slice(2).join('_') || '-';
       } else {
-        type = '기성품';
-        exception = '형식 오류';
+        exception = '기성품은 "제품군_제품명_제조사" 형식을 따라야 합니다.';
       }
     } else if (is2Part) {
       if (iamIptPairs[name]?.iam && iamIptPairs[name]?.ipt) {
         type = ext === 'iam' ? '판넬' : '판넬서브';
       } else {
-        type = '부품'; // 새 규칙에 따라 .iam도 부품 처리
+        type = '부품';
       }
     } else if (is3D && ext === 'iam') {
       type = '조립품';
     } else {
-      exception = '분류불가';
+      exception = '해당 파일은 분류 기준에 맞지 않습니다.';
     }
 
-    if (!type) type = '미분류';
+    if (!type && !exception) {
+      exception = '분류할 수 없는 형식입니다.';
+    }
 
     const tr = document.createElement('tr');
     tr.innerHTML = `
@@ -70,7 +75,7 @@ function analyze() {
       <td>${namePart || (name.includes('_') ? name.split('_').slice(1).join('_') : '')}</td>
       <td>${ext}</td>
       <td>${path}</td>
-      <td>${type}</td>
+      <td>${type || '-'}</td>
       <td>${vendor}</td>
       <td>${exception}</td>
     `;

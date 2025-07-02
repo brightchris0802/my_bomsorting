@@ -10,14 +10,14 @@ body {
 }
 
 .left {
-  width: 30%;
+  width: 20%;
   padding: 20px;
   box-sizing: border-box;
   background-color: #f9f9f9;
 }
 
 .right {
-  width: 70%;
+  width: 80%;
   padding: 20px;
   box-sizing: border-box;
   overflow-x: auto;
