@@ -7,7 +7,9 @@ function analyze() {
   const input = document.getElementById('inputArea').value.trim();
   const lines = input.split('\n');
   const entries = lines.map(line => {
-    const [filename, path] = line.split(/\t|\s{2,}/);
+    const cleanLine = line.trim();
+    const filename = cleanLine.split(/\\/).pop();
+    const path = cleanLine.replace(new RegExp('\\\\' + filename + '$'), '');
     return { filename, path };
   });
 
