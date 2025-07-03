@@ -46,10 +46,18 @@ function analyze() {
     } else if (isStandard && entry.filename.includes('_')) {
       const parts = entry.filename.replace(/\.(iam|ipt)$/i, '').split('_');
       if (parts.length >= 2) {
-        type = '기성품';
-        code = parts[0];
-        namePart = parts[1];
-        vendor = parts.slice(2).join('_') || '-';
+        const codeMatch = parts[0].match(/^([A-Za-z0-9]{4})-(E\d{2,3})$/);
+        if (codeMatch) {
+          type = '기성 PCB';
+          code = parts[0];
+          namePart = parts[1];
+          vendor = parts.slice(2).join('_') || '-';
+        } else {
+          type = '기성품';
+          code = parts[0];
+          namePart = parts[1];
+          vendor = parts.slice(2).join('_') || '-';
+        }
       } else {
         exception = '기성품은 "제품군_제품명_제조사" 형식을 따라야 합니다.';
       }
