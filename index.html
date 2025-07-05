@@ -1,38 +1,141 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>my_bomsorting</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BOM 분석기</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 30px;
+    }
+    .button-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    #inputArea {
+      width: 100%;
+      height: 100px;
+      margin-bottom: 20px;
+      font-family: monospace;
+    }
+    .tabs {
+      display: flex;
+      margin-bottom: 10px;
+    }
+    .tab {
+      padding: 8px 16px;
+      border: 1px solid #ccc;
+      cursor: pointer;
+      background-color: #f9f9f9;
+    }
+    .tab.active {
+      background-color: #e0e0e0;
+      font-weight: bold;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <h1>my_bomsorting</h1>
-    <div class="input-area">
-      <textarea id="inputData" placeholder="탑다운번호<TAB>경로 형식으로 붙여넣기"></textarea>
-      <div class="button-group">
-        <button id="analyzeBtn">분석하기</button>
-        <button id="resetBtn">초기화</button>
-      </div>
-    </div>
-
-    <div class="table-area">
-      <table>
-        <thead>
-          <tr>
-            <th>탑다운</th>
-            <th>도면번호</th>
-            <th>도면명</th>
-            <th>분류</th>
-            <th>제조사</th>
-            <th>예외</th>
-          </tr>
-        </thead>
-        <tbody id="resultBody"></tbody>
-      </table>
-    </div>
+  <div class="button-row">
+    <button onclick="analyze()">분석하기</button>
+    <button onclick="resetAll()">초기화</button>
   </div>
-  <script src="script.js"></script>
+
+  <textarea id="inputArea" placeholder="탑다운 넘버<TAB>파일 경로"></textarea>
+
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('stage1')">Stage1</div>
+    <div class="tab" onclick="showTab('stage2')">Stage2</div>
+  </div>
+
+  <div id="stage1" class="result">
+    <table>
+      <thead>
+        <tr><th>도번</th><th>도명</th><th>제조사</th><th>경로</th><th>예외</th></tr>
+      </thead>
+      <tbody id="stage1Body"></tbody>
+    </table>
+  </div>
+
+  <div id="stage2" class="result hidden">
+    <table>
+      <thead>
+        <tr><th>도번</th><th>도명</th><th>제조사</th><th>경로</th><th>예외</th></tr>
+      </thead>
+      <tbody id="stage2Body"></tbody>
+    </table>
+  </div>
+
+  <script>
+    function resetAll() {
+      document.getElementById("inputArea").value = "";
+      document.getElementById("stage1Body").innerHTML = "";
+      document.getElementById("stage2Body").innerHTML = "";
+    }
+
+    function showTab(tabId) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.result').forEach(r => r.classList.add('hidden'));
+      document.getElementById(tabId).classList.remove('hidden');
+      event.target.classList.add('active');
+    }
+
+    function analyze() {
+      const lines = document.getElementById("inputArea").value.trim().split("\n");
+      const stage1 = document.getElementById("stage1Body");
+      const stage2 = document.getElementById("stage2Body");
+      stage1.innerHTML = "";
+      stage2.innerHTML = "";
+
+      lines.forEach(line => {
+        const parts = line.split(/\t+/);
+        if (parts.length !== 2) return;
+        const [topdown, fullPath] = parts;
+
+        const pathParts = fullPath.split(/\\|\//);
+        const fileFullName = pathParts[pathParts.length - 1];
+        const folderName = pathParts[pathParts.length - 2];
+        const extension = fileFullName.split(".").pop();
+        const fileName = fileFullName.replace(/\.[^/.]+$/, "");
+
+        let category = "";
+        let manufacturer = "";
+        let exception = "";
+
+        if (!/\.(iam|ipt)$/i.test(fileFullName)) {
+          exception = "ipt/iam 외 확장자";
+        }
+
+        // 제조사 추출 예시 (폴더명 기준)
+        const vendorMatch = folderName.match(/_(\w+)$/);
+        if (vendorMatch) manufacturer = vendorMatch[1];
+
+        // Stage1 전체 출력
+        stage1.innerHTML += `
+          <tr><td>${topdown}</td><td>${fileName}</td><td>${manufacturer}</td><td>${fullPath}</td><td>${exception}</td></tr>
+        `;
+
+        // Stage2 예외만 출력
+        if (exception) {
+          stage2.innerHTML += `
+            <tr><td>${topdown}</td><td>${fileName}</td><td>${manufacturer}</td><td>${fullPath}</td><td>${exception}</td></tr>
+          `;
+        }
+      });
+    }
+  </script>
 </body>
 </html>
