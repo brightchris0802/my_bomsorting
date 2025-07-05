@@ -1,83 +1,72 @@
 body {
   font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 0;
-  background-color: #f6f7f8;
+  margin: 20px;
+  background-color: #f9f9f9;
+}
+
+h1 {
+  text-align: center;
+  color: #333;
 }
 
 .container {
   display: flex;
-  flex-direction: row;
-  height: 100vh;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
 }
 
-.input-area {
-  width: 20%;
-  padding: 20px;
-  background-color: #ffffff;
-  border-right: 1px solid #ddd;
-  box-sizing: border-box;
+.input-section {
+  flex: 0 0 30%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.input-area textarea {
+textarea {
   width: 100%;
-  height: 90%;
-  padding: 10px;
+  height: 500px;
   resize: none;
-  font-family: 'Courier New', monospace;
-  font-size: 14px;
+  font-family: monospace;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 
-.input-area .buttons {
+.button-group {
   display: flex;
   justify-content: space-between;
-  margin-top: 10px;
 }
 
-.input-area button {
-  padding: 8px 12px;
-  font-size: 14px;
-  cursor: pointer;
-  background-color: #007acc;
-  color: white;
+button {
+  padding: 10px 20px;
   border: none;
+  background-color: #007BFF;
+  color: white;
   border-radius: 4px;
-  transition: background-color 0.3s ease;
+  cursor: pointer;
 }
 
-.input-area button:hover {
-  background-color: #005f9e;
+button:hover {
+  background-color: #0056b3;
 }
 
-.output-area {
-  width: 80%;
-  padding: 20px;
-  box-sizing: border-box;
-  overflow-y: auto;
+.output-section {
+  flex: 1;
+  overflow-x: auto;
 }
 
-.output-table {
+#outputTable {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 10px;
-  font-size: 14px;
 }
 
-.output-table th,
-.output-table td {
+#outputTable th, #outputTable td {
   border: 1px solid #ccc;
   padding: 8px;
   text-align: left;
 }
 
-.output-table th {
-  background-color: #e1e1e1;
-}
-
-.output-table tr:nth-child(even) {
-  background-color: #f9f9f9;
-}
-
-.output-table tr:hover {
-  background-color: #f1f1f1;
+#outputTable th {
+  background-color: #f2f2f2;
 }
