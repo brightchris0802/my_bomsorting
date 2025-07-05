@@ -4,156 +4,37 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BOM 분석기</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-    }
-
-    .controls {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 10px;
-    }
-
-    .controls button {
-      padding: 12px 24px;
-      font-size: 16px;
-    }
-
-    textarea {
-      width: 100%;
-      height: 120px;
-      font-family: monospace;
-      font-size: 14px;
-      margin-bottom: 10px;
-    }
-
-    .tabs {
-      display: flex;
-      border-bottom: 2px solid #333;
-      margin-top: 10px;
-    }
-
-    .tab-button {
-      padding: 10px 20px;
-      cursor: pointer;
-      border: none;
-      border-bottom: 4px solid transparent;
-      font-size: 16px;
-      background-color: #f0f0f0;
-    }
-
-    .tab-button.active {
-      border-color: #333;
-      font-weight: bold;
-    }
-
-    .tab-content {
-      display: none;
-    }
-
-    .tab-content.active {
-      display: block;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-
-    th, td {
-      border: 1px solid #ccc;
-      padding: 6px;
-      text-align: left;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css" />
+  <script defer src="script.js"></script>
 </head>
 <body>
-  <div class="controls">
-    <button onclick="analyze()">분석하기</button>
-    <button onclick="clearAll()">초기화</button>
-  </div>
-
-  <textarea id="inputData" placeholder="탑다운 넘버 \t 전체 경로"></textarea>
-
-  <div class="tabs">
-    <button class="tab-button active" onclick="showTab('stage1')">Stage 1</button>
-    <button class="tab-button" onclick="showTab('stage2')">Stage 2</button>
-  </div>
-
-  <div id="stage1" class="tab-content active">
-    <table>
-      <thead>
-        <tr>
-          <th>도번</th>
-          <th>도명</th>
-          <th>제조사</th>
-          <th>경로</th>
-          <th>예외</th>
-        </tr>
-      </thead>
-      <tbody id="resultBody"></tbody>
-    </table>
-  </div>
-
-  <div id="stage2" class="tab-content">
-    <p>추후 추가 예정입니다.</p>
-  </div>
-
-  <script>
-    function showTab(tabId) {
-      document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(div => div.classList.remove('active'));
-      document.querySelector(`[onclick="showTab('${tabId}')"]`).classList.add('active');
-      document.getElementById(tabId).classList.add('active');
-    }
-
-    function analyze() {
-      const input = document.getElementById("inputData").value.trim();
-      const lines = input.split("\n");
-      const resultBody = document.getElementById("resultBody");
-      resultBody.innerHTML = "";
-
-      lines.forEach(line => {
-        if (!line.trim()) return;
-        const parts = line.split(/\t+/);
-        if (parts.length < 2) return;
-
-        const topdown = parts[0];
-        const path = parts[1];
-
-        const pathParts = path.split(/\\|\//);
-        const fileFullName = pathParts[pathParts.length - 1];
-        const folderName = pathParts[pathParts.length - 2];
-        const extension = fileFullName.split(".").pop().toLowerCase();
-        const fileName = fileFullName.replace(/\.[^/.]+$/, "");
-
-        let category = "";
-        let manufacturer = folderName || "";
-        let exception = "";
-
-        if (!/(iam|ipt)$/.test(extension)) {
-          exception = "ipt/iam 외 확장자";
-        }
-
-        resultBody.innerHTML += `
+  <div class="container fade show" id="mainContainer">
+    <div class="button-row">
+      <button id="analyzeBtn">분석하기</button>
+      <button id="resetBtn">초기화</button>
+    </div>
+    <textarea id="inputArea" placeholder="여기에 데이터를 붙여넣기 하세요"></textarea>
+    <div class="tabs">
+      <button class="tab-button active" data-target="stage1">Stage 1</button>
+      <button class="tab-button" data-target="stage2">Stage 2</button>
+    </div>
+    <div id="stage1" class="tab-content fade show">
+      <table>
+        <thead>
           <tr>
-            <td>${topdown}</td>
-            <td>${fileName}</td>
-            <td>${manufacturer}</td>
-            <td>${path}</td>
-            <td>${exception}</td>
+            <th>도번</th>
+            <th>도명</th>
+            <th>제조사</th>
+            <th>경로</th>
+            <th>예외</th>
           </tr>
-        `;
-      });
-    }
-
-    function clearAll() {
-      document.getElementById("inputData").value = "";
-      document.getElementById("resultBody").innerHTML = "";
-    }
-  </script>
+        </thead>
+        <tbody id="resultBody"></tbody>
+      </table>
+    </div>
+    <div id="stage2" class="tab-content fade">
+      <!-- Stage 2 내용은 비어있음 -->
+    </div>
+  </div>
 </body>
 </html>
