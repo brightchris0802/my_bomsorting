@@ -1,4 +1,4 @@
-function resetAll() {
+ffunction resetAll() {
   document.getElementById('inputArea').value = '';
   document.querySelector('#resultTable tbody').innerHTML = '';
 }
@@ -8,9 +8,15 @@ function analyze() {
   const lines = input.split('\n');
   const entries = lines.map(line => {
     const cleanLine = line.trim();
-    const filename = cleanLine.split(/\\/).pop();
-    const path = cleanLine.replace(new RegExp('\\\\' + filename + '$'), '');
-    return { filename, path };
+    const match = cleanLine.match(/^(.*[\\\/])([^\\\/]+)$/);
+    if (match) {
+      return {
+        path: match[1].replace(/[\\\/]$/, ''),
+        filename: match[2]
+      };
+    } else {
+      return { filename: '', path: '' };
+    }
   });
 
   const iamIptPairs = {};
