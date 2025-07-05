@@ -1,100 +1,124 @@
-function resetAll() {
-  document.getElementById('inputArea').value = '';
-  document.querySelector('#resultTable tbody').innerHTML = '';
-}
+document.addEventListener("DOMContentLoaded", () => {
+  const analyzeBtn = document.getElementById("analyzeBtn");
+  const clearBtn = document.getElementById("clearBtn");
+  const inputArea = document.getElementById("inputArea");
+  const resultArea = document.getElementById("resultArea");
 
-function analyze() {
-  const input = document.getElementById('inputArea').value.trim();
-  const lines = input.split('\n');
-  const entries = lines.map(line => {
-    const cleanLine = line.trim();
-    const match = cleanLine.match(/^(.*[\\/])([^\\/]+)$/);
-    if (match) {
-      return {
-        path: match[1].replace(/[\\/]+$/, ''),
-        filename: match[2]
-      };
-    } else {
-      return { filename: '', path: '' };
-    }
-  });
+  analyzeBtn.addEventListener("click", () => {
+    const rawLines = inputArea.value.split("\n").map(line => line.trim()).filter(line => line);
+    const results = [];
 
-  const iamIptPairs = {};
-  entries.forEach(entry => {
-    const name = entry.filename.replace(/\.(iam|ipt)$/i, '');
-    const ext = entry.filename.split('.').pop().toLowerCase();
-    const isIn2Part = /(?:^|\\)(?:2_Part|02_Part)(?:\\|$)/i.test(entry.path);
-    if (isIn2Part) {
-      if (!iamIptPairs[name]) iamIptPairs[name] = {};
-      iamIptPairs[name][ext] = true;
-    }
-  });
+    rawLines.forEach(line => {
+      const tabSplit = line.split("\t");
+      const [topdown, path] = tabSplit.length === 2 ? tabSplit : [null, tabSplit[0]];
 
-  const tbody = document.querySelector('#resultTable tbody');
-  tbody.innerHTML = '';
+      if (!path) return;
 
-  entries.forEach(entry => {
-    const ext = entry.filename.split('.').pop().toLowerCase();
-    const name = entry.filename.replace(/\.(iam|ipt)$/i, '');
-    const path = entry.path;
-    let type = '';
-    let code = '';
-    let namePart = '';
-    let vendor = '';
-    let exception = '';
+      const fileName = path.split("\\").pop();
+      const ext = fileName.split(".").pop().toLowerCase();
+      const baseName = fileName.replace(/\.[^/.]+$/, "");
+      const folders = path.split("\\");
+      const folderName = folders[folders.length - 2] || "";
+      const isIn3D = path.toLowerCase().includes("\\2_3d\\");
+      const isPart = /\\(02_|2_)part\\/i.test(path);
+      const isCommon = /\\(03_|3_)공용부품\\/i.test(path);
+      const folderKey = folders.slice(0, -1).join("\\");
 
-    const is2Part = /(?:^|\\)(?:2_Part|02_Part)(?:\\|$)/i.test(path);
-    const is3D = /(?:^|\\)3D(?:\\|$)/i.test(path);
-    const isStandard = /(?:^|\\)(?:3_공용부품|03_공용부품)(?:\\|$)/i.test(path);
+      let category = "-";
+      let exception = "-";
+      let productGroup = "-";
+      let maker = "-";
 
-    if (!entry.filename || !entry.path) {
-      exception = '파일명 또는 경로가 누락되어 분석할 수 없습니다.';
-    } else if (ext === 'ipt' && is3D) {
-      exception = 'ipt 파일은 조립품으로 분류할 수 없습니다.';
-    } else if (isStandard && entry.filename.includes('_')) {
-      const parts = entry.filename.replace(/\.(iam|ipt)$/i, '').split('_');
-      if (parts.length >= 2) {
-        const codeMatch = parts[0].match(/^([A-Za-z0-9]{4})-(E\d{2,3})$/);
-        if (codeMatch) {
-          type = '기성 PCB';
-          code = parts[0];
-          namePart = parts[1];
-          vendor = parts.slice(2).join('_') || '-';
+      // 확장자 필터링
+      if (!["ipt", "iam"].includes(ext)) {
+        exception = "지원되지 않는 확장자";
+        results.push([topdown || "-", fileName, "-", "-", "-", "-", "-", exception]);
+        return;
+      }
+
+      // 전자보드 (기성 PCB)
+      const matchCode = baseName.match(/MG\d{2}-E\d{2,3}/i);
+      if (isCommon && matchCode) {
+        category = "기성 PCB";
+        productGroup = matchCode[0];
+      }
+
+      // 공용부품 처리
+      if (isCommon && category === "-") {
+        const siblings = rawLines.filter(l => l.includes(folderKey + "\\"));
+        const filesInFolder = siblings.map(l => l.split("\\").pop());
+        const extensions = new Set(filesInFolder.map(name => name.split(".").pop().toLowerCase()));
+        const hasConflict = extensions.size > 1;
+
+        const nameMatchCount = filesInFolder.filter(n => n.replace(/\.[^/.]+$/, "") === folderName).length;
+
+        if (hasConflict) {
+          exception = "공용부품 중복됨";
+        } else if (nameMatchCount >= 1 && baseName === folderName) {
+          category = ext === "iam" ? "조립부품" : "부품";
         } else {
-          type = '기성품';
-          code = parts[0];
-          namePart = parts[1];
-          vendor = parts.slice(2).join('_') || '-';
+          exception = "폴더명과 일치 없음";
         }
-      } else {
-        exception = '기성품은 "제품군_제품명_제조사" 형식을 따라야 합니다.';
       }
-    } else if (is2Part) {
-      if (iamIptPairs[name]?.iam && iamIptPairs[name]?.ipt) {
-        type = ext === 'iam' ? '판넬' : '판넬서브';
-      } else {
-        type = '부품';
+
+      // Part 처리
+      if (isPart && category === "-") {
+        if (ext === "iam") {
+          const parentFolder = folders[folders.length - 2].toLowerCase();
+          const fileFolder = folders[folders.length - 1].toLowerCase();
+
+          if (parentFolder !== "profile" && baseName.toLowerCase().includes("profile")) {
+            category = "프로파일";
+          } else if (baseName.toLowerCase().includes("panel")) {
+            category = "판넬";
+          } else {
+            category = "부품"; // 조립품이지만 Part 내면 부품 처리
+          }
+        } else if (ext === "ipt") {
+          if (baseName.toLowerCase().includes("panel")) {
+            category = "판넬서브";
+          } else {
+            category = "부품";
+          }
+        }
       }
-    } else if (is3D && ext === 'iam') {
-      type = '조립품';
-    } else {
-      exception = '해당 파일은 분류 기준에 맞지 않습니다.';
-    }
 
-    if (!type && !exception) {
-      exception = '분류할 수 없는 형식입니다.';
-    }
+      if (category === "-") exception = "분류불가";
 
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${code || name}</td>
-      <td>${namePart || (name.includes('_') ? name.split('_').slice(1).join('_') : '')}</td>
-      <td>${ext}</td>
-      <td>${path}</td>
-      <td>${type || '-'}</td>
-      <td>${vendor}</td>
-      <td>${exception}</td>
-    `;
-    tbody.appendChild(tr);
+      results.push([
+        topdown || "-",
+        fileName,
+        category,
+        ext.toUpperCase(),
+        productGroup,
+        maker,
+        path,
+        exception
+      ]);
+    });
+
+    renderTable(results);
   });
-}
+
+  clearBtn.addEventListener("click", () => {
+    inputArea.value = "";
+    resultArea.innerHTML = "";
+  });
+
+  function renderTable(data) {
+    const headers = ["탑다운", "파일명", "분류", "확장자", "제품군", "제조사", "경로", "예외"];
+    let html = "<table class='output-table'><thead><tr>";
+
+    headers.forEach(h => html += `<th>${h}</th>`);
+    html += "</tr></thead><tbody>";
+
+    data.forEach(row => {
+      html += "<tr>";
+      row.forEach(col => html += `<td>${col}</td>`);
+      html += "</tr>";
+    });
+
+    html += "</tbody></table>";
+    resultArea.innerHTML = html;
+  }
+});

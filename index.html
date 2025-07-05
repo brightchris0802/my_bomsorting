@@ -2,35 +2,33 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>my_bomsorting</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="container">
-    <div class="left fade-in">
-      <textarea id="inputArea" placeholder="전체 경로를 여기에 붙여넣기하세요..."></textarea>
+    <div class="input-area">
+      <textarea id="inputData" placeholder="탑다운 번호 + 경로를 붙여넣으세요"></textarea>
       <div class="button-group">
-        <button onclick="analyze()">분석하기</button>
-        <button onclick="resetAll()">초기화</button>
+        <button id="analyzeBtn">분석하기</button>
+        <button id="clearBtn">초기화</button>
       </div>
     </div>
-    <div class="right fade-in">
-      <table id="resultTable">
+    <div class="output-area">
+      <table id="outputTable">
         <thead>
           <tr>
+            <th>탑다운</th>
+            <th>파일명</th>
+            <th>구분</th>
             <th>도면번호</th>
             <th>도면명칭</th>
-            <th>확장자</th>
-            <th>경로</th>
-            <th>분류</th>
             <th>제조사</th>
             <th>예외</th>
           </tr>
         </thead>
-        <tbody>
-          <!-- 결과 출력 -->
-        </tbody>
+        <tbody></tbody>
       </table>
     </div>
   </div>
