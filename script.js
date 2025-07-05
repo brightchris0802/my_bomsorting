@@ -11,7 +11,7 @@ function analyzeData() {
     const [topdown, path] = line.split(/\t+/);
     if (!topdown || !path) return;
 
-    const pathParts = path.split(/\\|\\//);
+    const pathParts = path.split(/[\\/]/); // 이 줄만 바꿔주세요
     const fileFullName = pathParts[pathParts.length - 1];
     const folderName = pathParts[pathParts.length - 2];
     const folderPath = pathParts.slice(0, pathParts.length - 1).join("/");
