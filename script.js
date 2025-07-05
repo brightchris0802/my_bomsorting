@@ -1,4 +1,4 @@
-ffunction resetAll() {
+function resetAll() {
   document.getElementById('inputArea').value = '';
   document.querySelector('#resultTable tbody').innerHTML = '';
 }
@@ -8,10 +8,10 @@ function analyze() {
   const lines = input.split('\n');
   const entries = lines.map(line => {
     const cleanLine = line.trim();
-    const match = cleanLine.match(/^(.*[\\\/])([^\\\/]+)$/);
+    const match = cleanLine.match(/^(.*[\\/])([^\\/]+)$/);
     if (match) {
       return {
-        path: match[1].replace(/[\\\/]$/, ''),
+        path: match[1].replace(/[\\/]+$/, ''),
         filename: match[2]
       };
     } else {

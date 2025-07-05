@@ -1,59 +1,53 @@
 body {
   font-family: Arial, sans-serif;
   margin: 0;
-  padding: 0;
+  padding: 20px;
+  background-color: #f4f4f4;
 }
 
 .container {
   display: flex;
-  height: 100vh;
+  flex-direction: row;
+  gap: 20px;
 }
 
 .left {
   width: 20%;
-  padding: 20px;
-  box-sizing: border-box;
-  background-color: #f9f9f9;
 }
 
 .right {
-  width: 80%;
-  padding: 20px;
-  box-sizing: border-box;
+  flex: 1;
   overflow-x: auto;
 }
 
 textarea {
   width: 100%;
-  height: 100%;
-  resize: none;
-  font-size: 14px;
-}
-
-.button-row {
-  margin-bottom: 10px;
+  height: 300px;
+  resize: vertical;
+  padding: 10px;
+  font-family: monospace;
 }
 
 button {
-  padding: 10px 20px;
-  font-size: 14px;
+  padding: 8px 16px;
   margin-right: 10px;
-  cursor: pointer;
+  font-size: 14px;
+}
+
+button-group {
+  margin-top: 10px;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 10px;
-}
-
-table, th, td {
-  border: 1px solid #ccc;
+  background-color: #fff;
 }
 
 th, td {
-  padding: 8px;
-  text-align: left;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  font-size: 13px;
 }
 
 th {
