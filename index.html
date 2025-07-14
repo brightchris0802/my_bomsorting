@@ -1,76 +1,41 @@
-// script.js
-document.addEventListener("DOMContentLoaded", () => {
-  const tabButtons = document.querySelectorAll(".tab-button");
-  const tabContents = document.querySelectorAll(".tab-content");
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BOM 분석기</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="appContainer">
+    <!-- 버튼 -->
+    <div id="buttonContainer">
+      <button id="analyzeBtn">분석하기</button>
+      <button id="resetBtn">초기화</button>
+    </div>
 
-  tabButtons.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const target = btn.getAttribute("data-tab");
+    <!-- 입력 -->
+    <textarea id="inputArea" placeholder="탑다운 넘버와 파일 경로를 붙여넣으세요"></textarea>
 
-      tabButtons.forEach((b) => b.classList.remove("active"));
-      tabContents.forEach((tc) => tc.classList.remove("active"));
+    <!-- 결과 테이블 -->
+    <div id="tableContainer">
+      <table id="resultTable">
+        <thead>
+          <tr>
+            <th>도번</th>
+            <th>도명</th>
+            <th>제조사</th>
+            <th>경로</th>
+            <th>예외</th>
+          </tr>
+        </thead>
+        <tbody id="resultBody">
+          <!-- 결과 출력 -->
+        </tbody>
+      </table>
+    </div>
+  </div>
 
-      btn.classList.add("active");
-      document.getElementById(target).classList.add("active");
-    });
-  });
-});
-
-function analyze() {
-  const input = document.getElementById("inputArea").value;
-  const resultBody = document.getElementById("resultBody");
-  resultBody.innerHTML = "";
-
-  const lines = input.trim().split("\n");
-
-  lines.forEach((line) => {
-    const [topdown, path] = line.split(/\t+/);
-    if (!topdown || !path) return;
-
-    const pathParts = path.split(/\\|\//);
-    const fileFullName = pathParts[pathParts.length - 1];
-    const folderName = pathParts[pathParts.length - 2];
-    const folderPath = pathParts.slice(0, pathParts.length - 1).join("/");
-    const extension = fileFullName.split(".").pop().toLowerCase();
-    const fileName = fileFullName.replace(/\.[^/.]+$/, "");
-
-    let category = "";
-    let manufacturer = "";
-    let exception = "";
-
-    if (/3[_\/]?공용부품/i.test(folderPath)) {
-      const match = fileName.match(/MG\d{2}-([A-Z]\d{2,3})/);
-      if (match && match[1].startsWith("E")) {
-        category = "기성 PCB";
-      } else if (extension === "iam") {
-        category = "기성품";
-      } else {
-        category = "기성 부품";
-      }
-      const vendorMatch = folderName.match(/_(\w+)$/);
-      if (vendorMatch) manufacturer = vendorMatch[1];
-    } else if (/2[_\/]?Part/i.test(folderPath)) {
-      if (extension === "iam") category = "조립품";
-      else if (extension === "ipt") category = "부품";
-      else exception = "ipt/iam 외 확장자";
-    } else {
-      if (extension === "iam") category = "조립품";
-      else if (extension === "ipt") category = "부품";
-    }
-
-    resultBody.innerHTML += `
-      <tr>
-        <td>${topdown}</td>
-        <td>${fileFullName}</td>
-        <td>${manufacturer}</td>
-        <td>${path}</td>
-        <td>${exception}</td>
-      </tr>
-    `;
-  });
-}
-
-function reset() {
-  document.getElementById("inputArea").value = "";
-  document.getElementById("resultBody").innerHTML = "";
-}
+  <script src="script.js"></script>
+</body>
+</html>
